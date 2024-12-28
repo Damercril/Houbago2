@@ -29,30 +29,30 @@ class ObjectivesScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _buildObjectifCard(
-            'Livraisons de la semaine',
-            '12/20',
-            0.6,
+            'Objectif d\'équipe de la semaine',
+            '150/300',
+            0.5,
             HoubagoTheme.primary,
             Icons.local_shipping_rounded,
-            '15 000 FCFA',
+            '500 FCFA',
           ),
           const SizedBox(height: 12),
           _buildObjectifCard(
-            'Satisfaction clients',
-            '4.8/5.0',
-            0.95,
-            Colors.amber,
-            Icons.star_rounded,
-            '25 000 FCFA',
-          ),
-          const SizedBox(height: 12),
-          _buildObjectifCard(
-            'Temps moyen de livraison',
-            '18/15 min',
-            0.75,
+            'Course d\'équipe dans la semaine',
+            '75/150',
+            0.5,
             Colors.green,
-            Icons.timer_rounded,
-            '20 000 FCFA',
+            Icons.directions_car_rounded,
+            '1 000 FCFA',
+          ),
+          const SizedBox(height: 12),
+          _buildObjectifCard(
+            'Objectif recrutement',
+            '4/10',
+            0.4,
+            Colors.orange,
+            Icons.people_rounded,
+            '5 000 FCFA',
           ),
           const SizedBox(height: 24),
           Row(
@@ -76,20 +76,11 @@ class ObjectivesScreen extends StatelessWidget {
           const SizedBox(height: 12),
           _buildChallengeCard(
             'Champion de la semaine',
-            'Effectuez 25 livraisons cette semaine',
-            '🏆 Badge Or + 50 000 FCFA',
+            'Effectuez 25 recrutements',
+            '🏆 Badge Or + 10 000 FCFA',
             Colors.orange,
             0.32,
             '8/25',
-          ),
-          const SizedBox(height: 12),
-          _buildChallengeCard(
-            'Expert de la rapidité',
-            'Maintenez une moyenne de 12min par livraison',
-            '⚡ Badge Éclair + 30 000 FCFA',
-            Colors.blue,
-            0.85,
-            '11/12 min',
           ),
           const SizedBox(height: 24),
           _buildRewardsSection(),
@@ -121,7 +112,7 @@ class ObjectivesScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Objectif du jour',
+            'Objectif équipe du jour',
             style: HoubagoTheme.textTheme.titleMedium?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w500,
@@ -132,13 +123,13 @@ class ObjectivesScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '5 livraisons restantes',
+                '20 livraisons restantes',
                 style: HoubagoTheme.textTheme.bodyLarge?.copyWith(
                   color: Colors.white.withOpacity(0.9),
                 ),
               ),
               Text(
-                '10 000 FCFA',
+                '300 FCFA',
                 style: HoubagoTheme.textTheme.titleMedium?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -150,7 +141,7 @@ class ObjectivesScreen extends StatelessWidget {
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(
-              value: 0.58,
+              value: 0.43,
               backgroundColor: Colors.white.withOpacity(0.3),
               valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
               minHeight: 8,
@@ -158,7 +149,7 @@ class ObjectivesScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            '7/12 livraisons',
+            '15/35 livraisons',
             style: HoubagoTheme.textTheme.bodyMedium?.copyWith(
               color: Colors.white.withOpacity(0.9),
             ),
