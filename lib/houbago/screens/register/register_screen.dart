@@ -16,7 +16,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
-  final _yangoPartnerController = TextEditingController();
   final List<TextEditingController> _pinControllers = List.generate(
     4,
     (index) => TextEditingController(),
@@ -27,6 +26,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
   );
   File? _profileImage;
 
+  // Liste des partenaires course
+  final List<String> _coursePartners = [
+    'Yango',
+    'Uber',
+    'Heetch',
+    'Bolt',
+    'FreeNow',
+  ];
+
+  // Liste des partenaires moto
+  final List<String> _motoPartners = [
+    'Uber Eats',
+    'Deliveroo',
+    'Just Eat',
+    'Stuart',
+  ];
+
+  String? _selectedCoursePartner;
+  String? _selectedMotoPartner;
+
   Future<void> _pickImage() async {
     try {
       final image = await ImagePicker().pickImage(source: ImageSource.gallery);
@@ -35,7 +54,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _profileImage = File(image.path);
       });
     } catch (e) {
-      // Gérer les erreurs de sélection d'image
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Erreur lors de la sélection de l\'image'),
@@ -47,12 +65,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _handleRegistration() {
     if (_formKey.currentState!.validate()) {
-      // Récupérer le code PIN complet
       final pin = _pinControllers.map((c) => c.text).join();
       
       // TODO: Implémenter la logique d'inscription
       
-      // Rediriger vers l'écran principal après l'inscription
       Navigator.pushNamedAndRemoveUntil(
         context,
         '/home',
@@ -66,7 +82,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _phoneController.dispose();
-    _yangoPartnerController.dispose();
     for (var controller in _pinControllers) {
       controller.dispose();
     }
@@ -175,15 +190,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: _yangoPartnerController,
+                DropdownButtonFormField<String>(
+                  value: _selectedCoursePartner,
                   decoration: const InputDecoration(
-                    labelText: 'Nom du partenaire Yango',
-                    prefixIcon: Icon(Icons.business),
+                    labelText: 'Partenaire Course',
+                    prefixIcon: Icon(Icons.directions_car),
                   ),
+                  items: _coursePartners.map((String partner) {
+                    return DropdownMenuItem<String>(
+                      value: partner,
+                      child: Text(partner),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedCoursePartner = newValue;
+                    });
+                  },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Veuillez entrer le nom du partenaire Yango';
+                      return 'Veuillez sélectionner un partenaire course';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: _selectedMotoPartner,
+                  decoration: const InputDecoration(
+                    labelText: 'Partenaire Moto',
+                    prefixIcon: Icon(Icons.delivery_dining),
+                  ),
+                  items: _motoPartners.map((String partner) {
+                    return DropdownMenuItem<String>(
+                      value: partner,
+                      child: Text(partner),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedMotoPartner = newValue;
+                    });
+                  },
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Veuillez sélectionner un partenaire moto';
                     }
                     return null;
                   },
@@ -204,28 +255,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: TextFormField(
                         controller: _pinControllers[index],
                         focusNode: _pinFocusNodes[index],
-                        decoration: InputDecoration(
-                          counterText: '',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
+                        keyboardType: TextInputType.number,
                         maxLength: 1,
                         obscureText: true,
-                        onChanged: (value) {
-                          if (value.isNotEmpty) {
-                            if (index < 3) {
-                              _pinFocusNodes[index + 1].requestFocus();
-                            }
-                          }
-                        },
+                        decoration: InputDecoration(
+                          counterText: "",
+                          filled: true,
+                          fillColor: HoubagoTheme.backgroundLight,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: HoubagoTheme.secondaryLight),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: HoubagoTheme.secondaryLight),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: HoubagoTheme.primary, width: 2),
+                          ),
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return '';
                           }
                           return null;
+                        },
+                        onChanged: (value) {
+                          if (value.isNotEmpty) {
+                            if (index < 3) {
+                              _pinFocusNodes[index + 1].requestFocus();
+                            } else {
+                              _pinFocusNodes[index].unfocus();
+                            }
+                          }
                         },
                       ),
                     ),
@@ -234,11 +301,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 32),
                 ElevatedButton(
                   onPressed: _handleRegistration,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: HoubagoTheme.primary,
-                    foregroundColor: Colors.white,
-                  ),
                   child: const Text('S\'inscrire'),
                 ),
                 const SizedBox(height: 16),
@@ -246,10 +308,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: Text(
-                    'Déjà un compte ? Connectez-vous',
-                    style: TextStyle(color: HoubagoTheme.primary),
-                  ),
+                  child: const Text('Déjà inscrit ? Se connecter'),
                 ),
               ],
             ),
