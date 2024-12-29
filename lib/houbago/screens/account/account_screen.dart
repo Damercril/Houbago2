@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:houbago/houbago/houbago_theme.dart';
 import 'package:houbago/houbago/models/user_profile.dart';
+import 'package:houbago/houbago/models/user_account.dart';
+import 'package:houbago/houbago/models/withdrawal.dart';
 import 'package:intl/intl.dart';
 import 'package:barcode_widget/barcode_widget.dart';
+import 'package:houbago/houbago/screens/support/support_screen.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -22,6 +25,115 @@ class _AccountScreenState extends State<AccountScreen> {
         content: Text('Code de parrainage copié !'),
         duration: Duration(seconds: 2),
       ),
+    );
+  }
+
+  void _showPaymentRequestDialog(BuildContext context) {
+    final TextEditingController amountController = TextEditingController();
+    final double maxAmount = dummyAccount.balance; // Solde disponible
+    String? errorText;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'Demande de paiement',
+                      style: HoubagoTheme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Solde disponible: ${maxAmount.toStringAsFixed(0)} FCFA',
+                      style: HoubagoTheme.textTheme.bodyLarge?.copyWith(
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: amountController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Montant en FCFA',
+                        errorText: errorText,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        prefixIcon: const Icon(Icons.attach_money),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          if (value.isEmpty) {
+                            errorText = 'Veuillez entrer un montant';
+                          } else {
+                            final amount = double.tryParse(value) ?? 0;
+                            if (amount <= 0) {
+                              errorText = 'Le montant doit être supérieur à 0';
+                            } else if (amount > maxAmount) {
+                              errorText = 'Montant supérieur au solde disponible';
+                            } else {
+                              errorText = null;
+                            }
+                          }
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text(
+                            'Annuler',
+                            style: TextStyle(color: Colors.grey[600]),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        ElevatedButton(
+                          onPressed: () {
+                            final amount = double.tryParse(amountController.text) ?? 0;
+                            if (amount > 0 && amount <= maxAmount) {
+                              // TODO: Traiter la demande de paiement
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Demande de paiement de ${amount.toStringAsFixed(0)} FCFA envoyée',
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: HoubagoTheme.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Confirmer'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -64,7 +176,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: ElevatedButton(
                       onPressed: () {
-                        // TODO: Implémenter la demande de paiement
+                        _showPaymentRequestDialog(context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: HoubagoTheme.primary,
@@ -117,17 +229,15 @@ class _AccountScreenState extends State<AccountScreen> {
                 title: 'Support',
                 children: [
                   _buildListTile(
-                    icon: Icons.help_outline,
-                    title: 'Centre d\'aide',
-                    onTap: () {
-                      // TODO: Ouvrir le centre d'aide
-                    },
-                  ),
-                  _buildListTile(
                     icon: Icons.contact_support,
                     title: 'Contacter le support',
                     onTap: () {
-                      // TODO: Ouvrir le formulaire de contact
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SupportScreen(),
+                        ),
+                      );
                     },
                   ),
                   _buildListTile(
@@ -184,11 +294,42 @@ class _AccountScreenState extends State<AccountScreen> {
                     title: 'Déconnexion',
                     textColor: Colors.red,
                     onTap: () {
-                      // TODO: Implémenter la déconnexion
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Déconnexion'),
+                          content: const Text(
+                            'Êtes-vous sûr de vouloir vous déconnecter ?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Annuler'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                // Fermer la boîte de dialogue
+                                Navigator.pop(context);
+                                // Rediriger vers l'écran de connexion
+                                Navigator.pushNamedAndRemoveUntil(
+                                  context,
+                                  '/',
+                                  (route) => false, // Supprime toutes les routes précédentes
+                                );
+                              },
+                              child: Text(
+                                'Déconnexion',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
                     },
                   ),
                 ],
               ),
+              _buildWithdrawalHistory(),
               const SizedBox(height: 24),
             ],
           ),
@@ -347,5 +488,72 @@ class _AccountScreenState extends State<AccountScreen> {
               : null),
       onTap: onTap,
     );
+  }
+
+  Widget _buildWithdrawalHistory() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Historique des retraits',
+          style: HoubagoTheme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        ...dummyWithdrawals.map((withdrawal) => _buildWithdrawalItem(withdrawal)),
+      ],
+    );
+  }
+
+  Widget _buildWithdrawalItem(Withdrawal withdrawal) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${withdrawal.amount.toStringAsFixed(0)} FCFA',
+            style: HoubagoTheme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                withdrawal.accountNumber ?? '',
+                style: HoubagoTheme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey[600],
+                ),
+              ),
+              Text(
+                _formatDate(withdrawal.date),
+                style: HoubagoTheme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
   }
 }

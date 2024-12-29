@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:houbago/houbago/houbago_theme.dart';
 import 'package:houbago/houbago/screens/login/login_screen.dart';
 import 'package:houbago/houbago/screens/main/main_screen.dart';
+import 'package:houbago/houbago/screens/register/register_screen.dart';
+import 'package:houbago/houbago/screens/splash/splash_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(const MyApp());
 }
 
@@ -43,10 +48,11 @@ class MyApp extends StatelessWidget {
         appBarTheme: HoubagoTheme.appBarTheme,
         useMaterial3: true,
       ),
-      initialRoute: '/',
+      home: const SplashScreen(),
       routes: {
-        '/': (context) => const LoginScreen(),
+        '/login': (context) => const LoginScreen(),
         '/home': (context) => const MainScreen(),
+        '/register': (context) => const RegisterScreen(),
       },
     );
   }

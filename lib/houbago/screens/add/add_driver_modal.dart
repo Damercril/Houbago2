@@ -129,6 +129,7 @@ class _DriverFormState extends State<DriverForm> {
   final _firstNameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
+  final _confirmPhoneController = TextEditingController();
   File? _registrationImage;
   File? _licenseImage;
 
@@ -241,6 +242,33 @@ class _DriverFormState extends State<DriverForm> {
                   if (value?.isEmpty ?? true) {
                     return 'Veuillez entrer un numéro de téléphone';
                   }
+                  // Vérifier que le numéro commence par +225 ou 0
+                  if (!value!.startsWith('+225') && !value.startsWith('0')) {
+                    return 'Le numéro doit commencer par +225 ou 0';
+                  }
+                  // Vérifier la longueur (10 chiffres après le préfixe)
+                  String digitsOnly = value.replaceAll(RegExp(r'\D'), '');
+                  if (digitsOnly.length != 10) {
+                    return 'Le numéro doit contenir 10 chiffres';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _confirmPhoneController,
+                decoration: const InputDecoration(
+                  labelText: 'Confirmer le numéro de téléphone',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.phone,
+                validator: (value) {
+                  if (value?.isEmpty ?? true) {
+                    return 'Veuillez confirmer le numéro de téléphone';
+                  }
+                  if (value != _phoneController.text) {
+                    return 'Les numéros de téléphone ne correspondent pas';
+                  }
                   return null;
                 },
               ),
@@ -321,6 +349,7 @@ class _DriverFormState extends State<DriverForm> {
     _firstNameController.dispose();
     _lastNameController.dispose();
     _phoneController.dispose();
+    _confirmPhoneController.dispose();
     super.dispose();
   }
 }
